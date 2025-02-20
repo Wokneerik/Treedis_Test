@@ -1,6 +1,7 @@
 'use client'
 import { MatterportSDK, Mattertag } from '@/src/types/sdk'
-import { useEffect, useRef } from 'react'
+import Menu from '@/src/ui/Menu/Menu'
+import { useEffect, useRef, useState } from 'react'
 
 declare global {
 	interface Window {
@@ -12,6 +13,16 @@ const Scene = () => {
 	const SDK_KEY = process.env.NEXT_PUBLIC_MATTERPORT_SDK_KEY ?? ''
 
 	const showcaseRef = useRef<HTMLIFrameElement | null>(null)
+
+	const handleTeleport = () => {
+		console.log('Teleport to office')
+	}
+
+	const handleNavigate = () => {
+		console.log('Navigate to office')
+	}
+
+	const [isMenuOpen, setIsMenuOpen] = useState(true)
 
 	useEffect(() => {
 		let showcase: any
@@ -105,16 +116,24 @@ const Scene = () => {
 	}, [SDK_KEY])
 
 	return (
-		<main style={{ height: '100vh', width: '100vw' }}>
-			<iframe
-				ref={showcaseRef}
-				id='showcase-iframe'
-				src='https://my.matterport.com/show/?m=m72PGKzeknR'
-				width='100%'
-				height='100%'
-				allowFullScreen
-			/>
-		</main>
+		<>
+			<main style={{ height: '100vh', width: '100vw' }}>
+				<iframe
+					ref={showcaseRef}
+					id='showcase-iframe'
+					src='https://my.matterport.com/show/?m=m72PGKzeknR'
+					width='100%'
+					height='100%'
+					allowFullScreen
+				/>
+
+				<Menu
+					onTeleport={handleTeleport}
+					onNavigate={handleNavigate}
+					onClose={() => setIsMenuOpen(false)}
+				/>
+			</main>
+		</>
 	)
 }
 
