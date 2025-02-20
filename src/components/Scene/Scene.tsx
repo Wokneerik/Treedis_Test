@@ -1,14 +1,6 @@
 'use client'
-
+import { MatterportSDK, Mattertag } from '@/src/types/sdk'
 import { useEffect, useRef } from 'react'
-
-type MatterportSDK = {
-	connect: (
-		iframe: HTMLIFrameElement | null,
-		key: string,
-		password?: string
-	) => Promise<any>
-}
 
 declare global {
 	interface Window {
@@ -18,6 +10,7 @@ declare global {
 
 const Scene = () => {
 	const SDK_KEY = process.env.NEXT_PUBLIC_MATTERPORT_SDK_KEY ?? ''
+
 	const showcaseRef = useRef<HTMLIFrameElement | null>(null)
 
 	useEffect(() => {
@@ -31,10 +24,66 @@ const Scene = () => {
 					''
 				)
 
-				console.log('SDK Connected!')
+				console.log('SDK Connected!', mpSdk)
 
-				mpSdk.on('ready', () => {
+				mpSdk.on('ready', async () => {
 					console.log('Showcase is ready!')
+
+					const cameraPosition = await mpSdk.Camera.getPosition()
+
+					const tagPosition = {
+						x: cameraPosition.x + 0.8,
+						y: cameraPosition.y,
+						z: cameraPosition.z + 0.8,
+					}
+
+					console.log('Camera Position:', cameraPosition)
+
+					const tagData: Mattertag = {
+						label: 'OFFICE',
+						description: 'Office Area',
+						anchorPosition: tagPosition,
+						stemVector: { x: 0, y: 2, z: 0 },
+						color: { r: 0, g: 255, b: 0 },
+						stemHeight: 3.0,
+						size: {
+							diameter: 8,
+							height: 8,
+						},
+					}
+					console.log('Adding Tag:', tagData)
+
+					try {
+						const tag = await mpSdk.Mattertag.add([tagData])
+						console.log('Tag created successfully:', tag)
+
+						await mpSdk.Mattertag.navigateToTag(
+							tag[0],
+							mpSdk.Mattertag.Transition.FLY
+						)
+
+						try {
+							await mpSdk.Mattertag.editColor(
+								tag[0],
+								{
+									r: 0,
+									g: 122,
+									b: 0,
+								},
+								true
+							)
+						} catch (e) {
+							console.log('Pulse effect not available')
+						}
+					} catch (error) {
+						console.error('Error creating tag:', error)
+					}
+				})
+
+				mpSdk.Pointer.intersection.subscribe(intersection => {
+					if (intersection) {
+						// console.log('Pointer position:', intersection.position)
+					}
 				})
 			} catch (e) {
 				console.error(e)
